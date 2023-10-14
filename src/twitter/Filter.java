@@ -56,7 +56,7 @@ public class Filter {
         Instant end = timespan.getEnd();
         for (Tweet tweet: tweets) {
             Instant timestamp = tweet.getTimestamp();
-            if ( !start.isBefore(timestamp) && ! end.isAfter(timestamp)) tweetInSpan.add(tweet);
+            if ( !end.isBefore(timestamp) && ! start.isAfter(timestamp)) tweetInSpan.add(tweet);
         }
         return tweetInSpan;
     }
@@ -78,14 +78,32 @@ public class Filter {
      */
     public static List<Tweet> containing(List<Tweet> tweets, List<String> words) {
         List<Tweet> matchTweet = new ArrayList<>();
-        for (Tweet tweet: tweets) {
-            String  text = tweet.getText();
-            Pattern pattern = Pattern.compile(text);
-            for (String word: words) {
-                if (pattern.matcher(word).find()) matchTweet.add(tweet);
+        for (String word: words) {
+            Pattern pattern = Pattern.compile(word);
+            for (Tweet tweet: tweets) {
+                if (pattern.matcher(tweet.getText()).find()) matchTweet.add(tweet);
             }
         }
         return matchTweet;
     }
 
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
