@@ -3,9 +3,9 @@
  */
 package twitter;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * SocialNetwork provides methods that operate on a social network.
@@ -41,7 +41,30 @@ public class SocialNetwork {
      *         either authors or @-mentions in the list of tweets.
      */
     public static Map<String, Set<String>> guessFollowsGraph(List<Tweet> tweets) {
-        throw new RuntimeException("not implemented");
+        Map <String, Set<String>> followsGraph = new HashMap<String, Set<String>>();
+        for(Tweet tweet : tweets) {
+            String username = tweet.getAuthor();
+            if (!followsGraph.containsKey(username)) followsGraph.put(username, new HashSet<String>());
+            Set<String> mentionedUsers = SocialNetwork.getMentioned(tweet.getText());
+            for (String mentionedUser : mentionedUsers) {
+                if (!mentionedUser.equals(username) )
+                    followsGraph.get(username).add(mentionedUser);
+            }
+        }
+        return followsGraph;
+
+
+    }
+
+    private static  Set<String> getMentioned(String tweet) {
+        String regex = "(?<=^|[^a-zA-Z0-9_-])@([a-zA-Z0-9_-]+)";
+        Set<String> mentioned = new HashSet<>();
+        Pattern pattern = Pattern.compile(regex);
+        Matcher matcher = pattern.matcher(tweet);
+        while (matcher.find()) {
+            String mentionedUser = matcher.group(1).toLowerCase();
+            if ( !(mentioned.contains(mentionedUser))) mentioned.add(mentionedUser);}
+        return mentioned;
     }
 
     /**
@@ -54,7 +77,42 @@ public class SocialNetwork {
      *         descending order of follower count.
      */
     public static List<String> influencers(Map<String, Set<String>> followsGraph) {
-        throw new RuntimeException("not implemented");
-    }
+
+        Map<String, Integer> rankMapInfluencers = new HashMap<>();
+        for (Map.Entry <String, Set<String>> user : followsGraph.entrySet()) {
+            if (!user.getValue().isEmpty()) {
+                for( String userFollow : user.getValue()) {
+                    if (!rankMapInfluencers.containsKey(userFollow))
+                        rankMapInfluencers.put( userFollow, 0);
+                    else {
+                        Integer count = rankMapInfluencers.get(userFollow);
+
+                        rankMapInfluencers.replace(userFollow, count + 1);
+                    }
+                }
+            }
+        }
+
+        List<Map.Entry<String, Integer>> entryList = new ArrayList<Map.Entry<String, Integer>>(rankMapInfluencers.entrySet());
+        Collections.sort(entryList, new Comparator<Map.Entry<String, Integer>>() {
+            @Override
+            public int compare(Map.Entry<String, Integer> o1, Map.Entry<String, Integer> o2) {
+                return o2.getValue() - o1.getValue();
+            }
+        });
+
+//        List<Map.Entry<String, Set<String>>> entryList = new ArrayList<Map.Entry<String, Set<String>>>(followsGraph.entrySet());
+//        Collections.sort(entryList, new Comparator<Map.Entry<String, Set<String>>>() {
+//            @Override
+//            public int compare(Map.Entry<String, Set<String>> o1, Map.Entry<String, Set<String>> o2) {
+//                return o1.getValue().size() - o2.getValue().size();
+//            }
+//        });
+        List<String> influenceRank = new ArrayList<>();
+        for (Map.Entry<String, Integer> entry : entryList) {
+            influenceRank.add(entry.getKey());
+        }
+        return influenceRank;
+    };
 
 }
