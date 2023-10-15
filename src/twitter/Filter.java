@@ -79,6 +79,8 @@ public class Filter {
     public static List<Tweet> containing(List<Tweet> tweets, List<String> words) {
         List<Tweet> matchTweet = new ArrayList<>();
         for (String word: words) {
+            // Here we can use the method that text contains word
+//          // rather than use regex.
             Pattern pattern = Pattern.compile(word);
             for (Tweet tweet: tweets) {
                 if (pattern.matcher(tweet.getText()).find()) matchTweet.add(tweet);
